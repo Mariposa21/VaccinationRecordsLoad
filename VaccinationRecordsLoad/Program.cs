@@ -25,12 +25,14 @@ namespace VaccinationRecordsLoad
 
             string loadingDirectory = config["loadingDirectory"].ToString();
             string loadingDirectoryArchive = config["loadingDirectoryArchive"].ToString();
-            string logDirectory = config["C:\\LoadingFiles\\LoadingLog"].ToString(); 
+            string logDirectory = config["logDrive"].ToString(); 
             string dbConnectionString = config["dbConnectionString"].ToString();
 
             //Create log file 
-            string logFileName = Path.Combine(logDirectory, "_VaccinationRecordLoadLog_" + DateTime.UtcNow.ToString() + ".txt"); 
-            FileStream filestream = new FileStream("out.txt", FileMode.Create);
+
+            string logFileName = Path.Combine(logDirectory, "VaccinationRecordLoadLog_" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".txt");
+
+            FileStream filestream = new FileStream(logFileName, FileMode.OpenOrCreate);
             var streamwriter = new StreamWriter(filestream);
             streamwriter.AutoFlush = true;
             Console.SetOut(streamwriter);
@@ -53,13 +55,21 @@ namespace VaccinationRecordsLoad
                     //Archive loading files to loading directory 
                     archiveLoadingFile(file, loadingDirectoryArchive);
                 }
+
+                createLogEntry("File(s) processing complete.");
+
+                filestream.Close();
+                Environment.Exit(0);
             }
             else
             {
                 //No files to process, exits out of console app successfully w/o error. 
                 createLogEntry("No record to process. Exiting console application.");
+                filestream.Close(); 
                 Environment.Exit(0); 
             }
+
+
         }
 
         private static void loadFileToDatabase(string fileName, string dbConnectionString)
